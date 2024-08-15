@@ -3,28 +3,28 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        require: true,
+        required: true,
         unique: true
     },
-    fullName: {
+    fullname: {
         type: String,
-        require: true,
+        required: true,
     },
     password: {
         type: String,
-        require: true,
+        required: true,
         minLength: 8
     },
-    following: {
+    following: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         default: []
-    },
-    followers: {
+    }],
+    followers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         default: []
-    },
+    }],
     profileImage: {
         type: String,
         default: ""

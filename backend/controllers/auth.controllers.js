@@ -1,11 +1,11 @@
+import generateTokenAndSetCookie from "../lib/utils/generateToken.js";
 import User from "../models/user.model.js";
 import bycrypt from "bcryptjs";
 
 
-
 export const signup = async (req, res) => {
     try {
-        const { username, password, fullname, email } = req.body;
+        const { username, fullname, email, password } = req.body;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({
@@ -13,17 +13,23 @@ export const signup = async (req, res) => {
             })
         }
 
-        const existUser = await User.findone({ username });
+        const existUser = await User.findOne({ username });
         if (existUser) {
             res.status(400).json({
                 error: "User already exist"
             })
         }
 
-        const existEmail = await User.findone({ email });
+        const existEmail = await User.findOne({ email });
         if (existEmail) {
             res.status(400).json({
                 error: "Email already exist"
+            })
+        }
+
+        if (password.length < 6) {
+            res.status(400).json({
+                error: "password must be greater than 6 digits"
             })
         }
 
@@ -60,10 +66,8 @@ export const signup = async (req, res) => {
 
     } catch (error) {
         console.log(`Error in signup controll ${error.message}`);
-
-
         res.status(500).json({
-            error: "Internal server error"
+            error: "Internal server error from auth.controller"
         })
 
 
