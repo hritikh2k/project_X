@@ -66,18 +66,46 @@ export const signup = async (req, res) => {
     } catch (error) {
         console.log(`Error in signup controll ${error.message}`);
         res.status(500).json({
-            error: "Internal server error from auth.controller"
+            error: "Internal server error from signup auth.controller"
         })
     }
 }
 
 export const login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+        const isPasswordChecker = bycrypt.compare(password, user.password || "");
+        if (!user || !isPasswordChecker) {
+            res.status(400).json({
+                error: "invalid username or password"
+            })
+        }
+        generateTokenAndSetCookie(user._id, res);
+
+        res.json({
+            _id: user._id,
+            username: user.username,
+            fullname: user.fullname,
+            email: user.email,
+            following: user.following,
+            followers: user.followers,
+            profile: user.profileImage,
+            bio: user.bio,
+            coverImage: user.coverImage,
+            bio: user.bio,
+        })
+
+
+    } catch (error) {
+        console.log(`Error in login controll ${error.message}`);
+        res.status(500).json({
+            error: "Internal server error from login auth.controller"
+        })
+
+    }
 
 }
 export const logout = async (req, res) => {
-    res.json({
-        msg: "hit the logout page1"
 
-
-    })
 }
