@@ -2,7 +2,6 @@ import generateTokenAndSetCookie from "../lib/utils/generateToken.js";
 import User from "../models/user.model.js";
 import bycrypt from "bcryptjs";
 
-
 export const signup = async (req, res) => {
     try {
         const { username, fullname, email, password } = req.body;
@@ -42,6 +41,7 @@ export const signup = async (req, res) => {
             email,
             password: hashPassword
         })
+
         if (newUser) {
             generateTokenAndSetCookie(newUser._id, res);
             await newUser.save();
@@ -57,6 +57,7 @@ export const signup = async (req, res) => {
                 coverImage: newUser.coverImage,
                 bio: newUser.bio,
             })
+
         } else {
             res.status(400).json({
                 error: "invalid user data"
@@ -106,6 +107,7 @@ export const login = async (req, res) => {
     }
 
 }
+
 export const logout = async (req, res) => {
     try {
         res.cookie("jwt", "", { maxAge: 0 })
@@ -120,5 +122,18 @@ export const logout = async (req, res) => {
             error: "Internal server error from logout auth.controller"
         })
 
+    }
+}
+
+export const getme = async (req, res) => {
+    try {
+
+        const user = await User.findById(req.user._id).select("_password");
+
+    } catch (error) {
+        console.log(`Error in getme controll ${error.message}`);
+        res.status(500).json({
+            error: "Internal server error from getme auth.controller"
+        })
     }
 }
