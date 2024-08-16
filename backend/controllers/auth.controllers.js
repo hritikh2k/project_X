@@ -115,7 +115,6 @@ export const logout = async (req, res) => {
             message: "logged out successfully"
         })
 
-
     } catch (error) {
         console.log(`Error in logout controll ${error.message}`);
         res.status(500).json({
@@ -128,7 +127,8 @@ export const logout = async (req, res) => {
 export const getme = async (req, res) => {
     try {
 
-        const user = await User.findById(req.user._id).select("_password");
+        const user = await User.findById(req.user._id).select("-password");
+        res.status(200).json(user)
 
     } catch (error) {
         console.log(`Error in getme controll ${error.message}`);

@@ -1,9 +1,9 @@
-import User from "../models/user.model.js"
-// import dotenv from dotenv;
+import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
 
 export const protectedRoute = async (req, res, next) => {
     try {
-        const token = req.cookie.jwt;
+        const token = req.cookies.jwt;
         if (!token) {
             res.status(400).json({ error: "Invalid:token is not provided" });
         }
