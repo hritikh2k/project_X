@@ -1,0 +1,5 @@
+MONGO_URI='mongodb+srv://hritikh2k:Hritikkumar%405178@cluster0.pf0nk.mongodb.net/twitter-data'
+
+PORT=3000
+
+JWT_SECRET=ikeSLGl8QuEcsFSUGLWLtFgDOfcidfqx51ekMTPldiQ=
