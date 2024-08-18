@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import User from "./user.model.js";
+import { boolean } from "zod";
 
 const notificationSchema = new mongoose.Schema({
     from: {
@@ -13,12 +14,12 @@ const notificationSchema = new mongoose.Schema({
         require: true
     },
     type: {
-        type: "string",
+        type: String,
         require: true,
         enum: ["follow", "like"]
     },
     read: {
-
-
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true })
