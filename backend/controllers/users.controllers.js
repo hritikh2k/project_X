@@ -1,4 +1,5 @@
 import generateTokenAndSetCookie from "../lib/utils/generateToken.js";
+import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import bycrypt from "bcryptjs";
 
@@ -44,6 +45,14 @@ export const followUnfollow = async (req, res) => {
         if (isFollowing) {
             await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
             await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+
+            const newNotification = new Notification({
+                type: "unfolllow",
+                from: userToModify._id,
+                to: req.user._id
+            })
+            await newNotification.save();
+
             res.status(200).json({
                 message: "User unfollowed successfully"
             });
@@ -51,10 +60,16 @@ export const followUnfollow = async (req, res) => {
             await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
             await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
 
-            cosnt newNotification = new
-                res.status(200).json({
-                    message: "User followed successfully"
-                });
+            const newNotification = new Notification({
+                type: "folllow",
+                from: req.user._id,
+                to: userToModify._id
+            })
+            await newNotification.save();
+
+            res.status(200).json({
+                message: "User followed successfully"
+            });
         }
 
     } catch (error) {
