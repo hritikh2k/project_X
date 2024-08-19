@@ -1,7 +1,5 @@
-import generateTokenAndSetCookie from "../lib/utils/generateToken.js";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import bycrypt from "bcryptjs";
 
 export const getUserProfile = async (req, res) => {
     const { username } = req.params;
@@ -47,7 +45,7 @@ export const followUnfollow = async (req, res) => {
             await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
 
             const newNotification = new Notification({
-                type: "unfolllow",
+                type: "unfollow",
                 from: userToModify._id,
                 to: req.user._id
             })
@@ -61,7 +59,7 @@ export const followUnfollow = async (req, res) => {
             await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
 
             const newNotification = new Notification({
-                type: "folllow",
+                type: "follow",
                 from: req.user._id,
                 to: userToModify._id
             })
@@ -79,6 +77,36 @@ export const followUnfollow = async (req, res) => {
         })
     }
 
+}
+
+export const getSuggestUsers = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const userFollowedByMe = await User.findById(userId).select("following");
+
+        const user = await User.aggregate([{
+            $match: {
+                _id: { $ne: userId },
+            },
+        }, {
+            $sample: { size: 10 },
+        }
+        ])
+
+        const filteredUsers = user.filter((user) => !userFollowedByMe.following.includes(user._id));
+        const sugggestedUsers = filteredUsers.slice(0, 5);
+
+        sugggestedUsers.forEach((user) => (user.password = null));
+        res.status(200).json(
+            sugggestedUsers
+        )
+
+    } catch (error) {
+        console.log(`Error in getSuggestUsers controll ${error.message}`);
+        res.status(500).json({
+            error: "Internal server error from getSuggestUsers users.controller"
+        })
+    }
 }
 
 export const updateUserProfile = async (req, res) => {
