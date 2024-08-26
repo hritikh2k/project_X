@@ -55,7 +55,7 @@ export const signup = async (req, res) => {
                 profile: newUser.profileImage,
                 bio: newUser.bio,
                 coverImage: newUser.coverImage,
-                bio: newUser.bio,
+                link: newUser.link,
             })
 
         } else {

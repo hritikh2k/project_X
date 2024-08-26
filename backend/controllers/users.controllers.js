@@ -1,5 +1,7 @@
+import { v2 as cloudinary } from "cloudinary";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 
 export const getUserProfile = async (req, res) => {
     const { username } = req.params;
@@ -88,7 +90,8 @@ export const getSuggestUsers = async (req, res) => {
             $match: {
                 _id: { $ne: userId },
             },
-        }, {
+        },
+        {
             $sample: { size: 10 },
         }
         ])
@@ -110,5 +113,59 @@ export const getSuggestUsers = async (req, res) => {
 }
 
 export const updateUserProfile = async (req, res) => {
+    let { username, fullname, email, currentPassword, newPassword, link, bio } = req.body;
+    let { profileImage, coverImage } = req.body;
 
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(400).json({
+                message: "User not found"
+            });
+        }
+        if ((!currentPassword && newPassword) || (!newPassword && currentPassword)) {
+            return res.status(400).json({ message: "Please provide both currnet passaword and new password" });
+        }
+        if (newPassword && currentPassword) {
+            const isMatch = bcrypt.compare(user.password, currentPassword);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+            if (newPassword.length < 6) {
+                return res.status(400).json({ error: "Password must be greater than 6 digits" });
+            }
+        }
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        if (profileImage) {
+            if (user.profileImage) {
+                await cloudinary.uploader.destroy(user.profileImage.split("/").pop().split(".")[0]);
+            }
+            const uploaderResponse = await cloudinary.uploader.upload(profileImage);
+            profileImage = uploaderResponse.secure_url;
+        }
+
+        if (coverImage) {
+            if (user.coverImage) {
+                await cloudinary.uploader.destroy(user.coverImage.split("/").pop().split(".")[0]);
+            }
+            const uploaderResponse = await cloudinary.uploader.upload(coverImage);
+            coverImage = uploaderResponse.secure_url
+        }
+
+        user.fullname = username || user.fullname;
+        user.email = email || user.email;
+        user.fullname = fullname || user.fullname;
+        user.bio = bio || user.bio;
+        user.link = link || user.link;
+        user.coverImage = coverImage || user.coverImage;
+        user.profileImage = profileImage || user.profileImage;
+
+    } catch (error) {
+        console.log(`Error in updateUserProfile controll ${error.message}`);
+        res.status(500).json({
+            error: "Internal server error from updateUserProfile users.controller"
+        })
+    }
 }
