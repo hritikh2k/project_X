@@ -76,12 +76,20 @@ export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findOne({ username });
-        const isPasswordChecker = bycrypt.compare(password, user.password || "");
-        if (!user || !isPasswordChecker) {
-            res.status(400).json({
+        // const isPasswordChecker = bycrypt.compare(password, user.password || "");
+        if (!user) {
+            return res.status(400).json({
                 error: "invalid username or password"
             })
+        } else {
+            const isPasswordChecker = bycrypt.compare(password, user.password || "");
+            if (!isPasswordChecker) {
+                return res.status(400).json({
+                    error: "invalid username or password"
+                })
+            }
         }
+
         generateTokenAndSetCookie(user._id, res);
 
         res.json({

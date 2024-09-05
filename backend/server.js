@@ -23,7 +23,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 
 app.listen(port, () => {
-    console.log(`server is running at ${port}`)
+    console.log("");
+    console.log(`http://localhost:${port}`)
     mongoConnect();
 })
 
