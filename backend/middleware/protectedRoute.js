@@ -5,24 +5,27 @@ export const protectedRoute = async (req, res, next) => {
     try {
         const token = req.cookies.jwt;
         if (!token) {
-            res.status(400).json({ error: "Invalid:token is not provided" });
+            return res.status(400).json({
+                error: "Invalid:token is not provided",
+                message: "You need to login first"
+            });
         }
         const decode = jwt.verify(token, process.env.JWT_SECRET);
 
         if (!decode) {
-            res.status(400).json({
+            return res.status(400).json({
                 error: "Invalid token"
             })
         }
         const user = await User.findById(decode.userId).select("-password");
 
         if (!user) {
-            res.status(400).json({
+            return res.status(400).json({
                 error: "user not found"
             })
         }
 
-        req.user = user
+        req.user = user;
         next();
 
     } catch (error) {

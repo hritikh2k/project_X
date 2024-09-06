@@ -54,7 +54,7 @@ export const followUnfollow = async (req, res) => {
             await newNotification.save();
 
             res.status(200).json({
-                message: "User unfollowed successfully"
+                message: `User unfollowed ${userToModify.username} successfully`
             });
         } else {
             await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
@@ -68,7 +68,7 @@ export const followUnfollow = async (req, res) => {
             await newNotification.save();
 
             res.status(200).json({
-                message: "User followed successfully"
+                message: `User followed ${userToModify.username} successfully `
             });
         }
 
@@ -83,6 +83,7 @@ export const followUnfollow = async (req, res) => {
 
 export const getSuggestUsers = async (req, res) => {
     try {
+        console.log(req.user.username);
         const userId = req.user._id;
         const userFollowedByMe = await User.findById(userId).select("following");
 
