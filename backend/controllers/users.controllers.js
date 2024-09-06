@@ -83,7 +83,6 @@ export const followUnfollow = async (req, res) => {
 
 export const getSuggestUsers = async (req, res) => {
     try {
-        console.log(req.user.username);
         const userId = req.user._id;
         const userFollowedByMe = await User.findById(userId).select("following");
 
@@ -116,57 +115,72 @@ export const getSuggestUsers = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
     let { username, fullname, email, currentPassword, newPassword, link, bio } = req.body;
     let { profileImage, coverImage } = req.body;
+    let userId = req.user._id;
 
     try {
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         if (!user) {
             return res.status(400).json({
                 message: "User not found"
             });
         }
-        if ((!currentPassword && newPassword) || (!newPassword && currentPassword)) {
-            return res.status(400).json({ message: "Please provide both currnet passaword and new password" });
+
+        // Password update validation
+        if ((currentPassword && !newPassword) || (!currentPassword && newPassword)) {
+            return res.status(400).json({ message: "Please provide both current password and new password" });
         }
+
         if (newPassword && currentPassword) {
-            const isMatch = bcrypt.compare(user.password, currentPassword);
+            const isMatch = await bcrypt.compare(currentPassword, user.password); // Await added here
             if (!isMatch) {
                 return res.status(400).json({ message: "Current password is incorrect" });
             }
             if (newPassword.length < 6) {
-                return res.status(400).json({ error: "Password must be greater than 6 digits" });
+                return res.status(400).json({ error: "Password must be greater than 6 characters" });
             }
+            // Update password only if conditions are met
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
         }
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(newPassword, salt);
 
+        // Profile image upload handling
         if (profileImage) {
             if (user.profileImage) {
                 await cloudinary.uploader.destroy(user.profileImage.split("/").pop().split(".")[0]);
             }
             const uploaderResponse = await cloudinary.uploader.upload(profileImage);
-            profileImage = uploaderResponse.secure_url;
+            user.profileImage = uploaderResponse.secure_url;
         }
 
+        // Cover image upload handling
         if (coverImage) {
             if (user.coverImage) {
                 await cloudinary.uploader.destroy(user.coverImage.split("/").pop().split(".")[0]);
             }
             const uploaderResponse = await cloudinary.uploader.upload(coverImage);
-            coverImage = uploaderResponse.secure_url
+            user.coverImage = uploaderResponse.secure_url;
         }
 
-        user.fullname = username || user.fullname;
-        user.email = email || user.email;
+        // Update user fields
+        user.username = username || user.username;
         user.fullname = fullname || user.fullname;
+        user.email = email || user.email;
         user.bio = bio || user.bio;
         user.link = link || user.link;
-        user.coverImage = coverImage || user.coverImage;
-        user.profileImage = profileImage || user.profileImage;
+
+        // Save user changes
+        await user.save();
+
+        // Return the updated user profile
+        res.status(200).json({
+            message: "User profile updated successfully",
+            user
+        });
 
     } catch (error) {
-        console.log(`Error in updateUserProfile controll ${error.message}`);
+        console.log(`Error in updateUserProfile controller: ${error.message}`);
         res.status(500).json({
             error: "Internal server error from updateUserProfile users.controller"
-        })
+        });
     }
-}
+};
