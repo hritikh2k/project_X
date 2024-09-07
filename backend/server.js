@@ -4,7 +4,9 @@ import dotenv from "dotenv";
 import mongoConnect from "./db/db.js";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
+import postRoutes from "./routes/post.routes.js";
 import { v2 as cloudinary } from "cloudinary";
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,6 +23,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/post", postRoutes);
 
 app.listen(port, () => {
     console.log("");
