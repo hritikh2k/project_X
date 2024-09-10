@@ -238,3 +238,34 @@ export const getFollowingPost = async (req, res) => {
         });
     }
 }
+
+export const getUserPost = async (req, res) => {
+    const username = req.params.username;
+    try {
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found"
+            })
+        }
+
+        const userFeed = await Post.find({ user: user._id }).sort({ createdAt: -1 })
+            .populate({
+                path: "user",
+                select: "-password"
+            }).populate({
+                path: "comments.user",
+                select: "-password"
+            });
+
+        res.status(200).json({ userFeed });
+
+
+    } catch (error) {
+        console.log(`Error in getUserPost post.controllers controll ${error.message}`);
+        res.status(500).json({
+            error: "Internal server error from getUserPost post.controller"
+        });
+    }
+}
