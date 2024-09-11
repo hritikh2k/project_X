@@ -23,7 +23,7 @@ export const deleteNotifications = async (req, res) => {
     try {
         const userId = req.user._id;
         await Notification.deleteMany({ to: userId });
-        res.status(200).json({ error: "Notification was deleted successfully" });
+        res.status(200).json({ error: "All notification was deleted successfully" });
     } catch (error) {
         console.log(`Error in deleteNotifications post.controllers controll ${error.message}`);
         res.status(500).json({
