@@ -5,6 +5,7 @@ import mongoConnect from "./db/db.js";
 import cookieParser from "cookie-parser";
 import usersRoutes from "./routes/users.routes.js";
 import postRoutes from "./routes/post.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 import { v2 as cloudinary } from "cloudinary";
 
 
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/post", postRoutes);
+app.use("/api/notification", notificationRoutes);
 
 app.listen(port, () => {
     console.log("");
